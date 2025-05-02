@@ -1,0 +1,92 @@
+/* General Styles */
+body {
+    background-color: #f8f9fa; /* Light background for contrast */
+    font-family: 'Roboto', Arial, sans-serif; /* Modern font */
+    color: #333; /* Text color for readability */
+}
+
+.navbar {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for navbar */
+}
+
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+.navbar .text-white {
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.container h2 {
+    font-weight: bold;
+    color: #343a40;
+    text-align: center;
+}
+
+.row {
+    justify-content: center; /* Center the buttons */
+}
+
+.btn {
+    font-size: 1.1rem;
+    font-weight: 600;
+    padding: 15px;
+    border-radius: 8px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn:hover {
+    transform: scale(1.05); /* Slight zoom effect on hover */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); /* Add shadow on hover */
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    border: none;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+.btn-info {
+    background-color: #17a2b8;
+    border: none;
+}
+
+.btn-info:hover {
+    background-color: #138496;
+}
+
+.btn-success {
+    background-color: #28a745;
+    border: none;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+}
+
+.btn-warning {
+    background-color: #ffc107;
+    border: none;
+}
+
+.btn-warning:hover {
+    background-color: #e0a800;
+}
+
+.mb-3 {
+    margin-bottom: 20px !important; /* Add spacing between buttons */
+}

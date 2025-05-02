@@ -46,6 +46,7 @@ if (isset($_POST['download_csv'])) {
     <h1>Generate Reports</h1>
     <p>Generate detailed reports on exam schedules, lecturer allocations, and hall allocations.</p>
 
+    <!-- Form for generating reports -->
     <form method="POST">
         <div class="mb-3">
             <label for="report_type" class="form-label">Select Report Type</label>
@@ -58,11 +59,11 @@ if (isset($_POST['download_csv'])) {
         <button type="submit" class="btn btn-primary">Generate Report</button>
     </form>
 
+    <!-- Form for downloading CSV -->
     <form method="POST" class="mt-4">
+        <input type="hidden" name="report_type" value="exam_schedule"> <!-- Hidden input for report type -->
         <div class="mb-3">
             <button type="submit" name="download_csv" class="btn btn-success">Download CSV (Excel)</button>
         </div>
     </form>
 </div>
-
-<?php include '../includes/footer.php'; ?>
