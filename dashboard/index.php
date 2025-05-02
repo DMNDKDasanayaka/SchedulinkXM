@@ -15,7 +15,7 @@ if (!isset($_SESSION['user_id'])) {
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
-        <span class="navbar-brand">SHECODERess Admin</span>
+        <span class="navbar-brand">ShedulinkXM Admin</span>
         <div class="d-flex">
             <span class="text-white me-3">Welcome, <?php echo $_SESSION['username']; ?></span>
             <a class="btn btn-outline-light" href="../auth/logout.php">Logout</a>

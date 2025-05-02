@@ -1,6 +1,6 @@
 <?php
 $host = 'localhost';           // Your MySQL host, usually localhost
-$db = 'shedulink';   // Your database name
+$db = 'shecoderess_system';   // Your database name
 $user = 'root';               // Your MySQL username (default is 'root' for XAMPP)
 $pass = '';                   // Your MySQL password (default is empty for XAMPP)
 

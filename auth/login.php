@@ -30,30 +30,38 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Login</title>
-    <link rel="stylesheet" href="../assets/bootstrap/bootstrap.min.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login - YourSystem</title>
+  <link rel="stylesheet" href="login.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 </head>
-<body class="bg-light">
-<div class="container mt-5">
-    <div class="card mx-auto" style="max-width: 400px;">
-        <div class="card-header text-center"><h4>Login</h4></div>
-        <div class="card-body">
-            <?php if (!empty($error)) echo "<div class='alert alert-danger'>$error</div>"; ?>
-            <form method="POST" action="">
-                <div class="form-group mb-3">
-                    <label>Username</label>
-                    <input type="text" name="username" class="form-control" required />
-                </div>
-                <div class="form-group mb-3">
-                    <label>Password</label>
-                    <input type="password" name="password" class="form-control" required />
-                </div>
-                <button type="submit" class="btn btn-primary w-100">Login</button>
-            </form>
+<body>
+  <div class="login-container">
+    <div class="login-card">
+      <div class="logo">
+        <!-- Replace with your logo -->
+        <h2>YourSystem</h2>
+      </div>
+      <h3>Sign in to your account</h3>
+      <form action="login.php" method="POST">
+        <div class="input-group">
+          <label for="username">Username</label>
+          <input type="text" name="username" id="username" required>
         </div>
+        <div class="input-group">
+          <label for="password">
+            Password
+            <a href="#" class="forgot">Forgot?</a>
+          </label>
+          <input type="password" name="password" id="password" required>
+        </div>
+        <button type="submit" class="btn">Login</button>
+      </form>
+      <p class="footer-text">Don't have an account? <a href="../auth/register.php" class="text-primary">Sign up</a></small>
     </div>
-</div>
+  </div>
 </body>
 </html>
