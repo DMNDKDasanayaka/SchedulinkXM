@@ -40,6 +40,9 @@ if (!isset($_SESSION['user_id'])) {
             <a href="view_allocations.php" class="btn btn-success w-100">View Allocations</a>
         </div>
         <div class="col-md-4 mb-3">
+            <a href="payment_management.php" class="btn btn-success w-100">Payment Management</a>
+        </div>
+        <div class="col-md-4 mb-3">
             <a href="reports.php" class="btn btn-warning w-100">Reports</a>
         </div>
     </div>

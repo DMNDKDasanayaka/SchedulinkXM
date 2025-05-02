@@ -1,8 +1,8 @@
 <?php
 $host = 'localhost';           // Your MySQL host, usually localhost
-$db = 'shecoderess_system';   // Your database name
-$user = 'root';               // Your MySQL username (default is 'root' for XAMPP)
-$pass = '';                   // Your MySQL password (default is empty for XAMPP)
+$db = 'SchedulinkXM';          // Corrected database name
+$user = 'root';                // Your MySQL username (default is 'root' for XAMPP)
+$pass = '';                    // Your MySQL password (default is empty for XAMPP)
 
 $conn = new mysqli($host, $user, $pass, $db);
 
