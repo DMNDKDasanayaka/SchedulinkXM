@@ -1,9 +1,20 @@
-<?php require_once '../partials/header.php'; ?>
-
 <?php
-// Safe fallback defaults (optional during development/testing)
-$canEdit = $canEdit ?? false;
-$halls = $halls ?? [];
+session_start(); // Start the session
+require_once '../partials/header.php';
+
+require_once '../../config/database.php';
+
+try {
+    $stmt = $pdo->prepare("SELECT id, name, capacity, faculty FROM halls");
+    $stmt->execute();
+    $halls = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {
+    $halls = [];
+    $error = "Failed to fetch exam halls: " . $e->getMessage();
+}
+
+// Check if the user role is set in the session
+$canEdit = isset($_SESSION['user_role']) && $_SESSION['user_role'] === '';
 ?>
 
 <div class="container mt-4">
@@ -11,6 +22,10 @@ $halls = $halls ?? [];
     
     <?php if ($canEdit): ?>
         <a href="/halls/create" class="btn btn-primary mb-3">Add New Hall</a>
+    <?php endif; ?>
+    
+    <?php if (isset($error)): ?>
+        <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
     
     <table class="table table-striped table-hover">
