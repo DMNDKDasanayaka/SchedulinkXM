@@ -388,6 +388,12 @@ if (!isset($_SESSION['user_id'])) {
                 </a>
             </div>
             <div class="nav-item">
+                <a href="payment_management.php" class="nav-link">
+                    <i class="fas fa-tasks"></i>
+                    <span>Payment Management</span>
+                </a>
+            </div>
+            <div class="nav-item">
                 <a href="reports.php" class="nav-link">
                     <i class="fas fa-chart-bar"></i>
                     <span>Reports</span>
@@ -413,6 +419,7 @@ if (!isset($_SESSION['user_id'])) {
         <div class="col-md-4 mb-3">
             <a href="view_allocations.php" class="btn btn-success w-100">View Allocations</a>
         </div>
+       
         <div class="col-md-4 mb-3">
             <a href="reports.php" class="btn btn-warning w-100">Reports</a>
         </div>
