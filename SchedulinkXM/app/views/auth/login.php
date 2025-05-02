@@ -542,7 +542,7 @@
                     </div>
                 <?php endif; ?>
                 
-                <form action="/login" method="POST">
+                <form action="/SchedulinkXM/SchedulinkXM/app/handlers/login.php" method="POST">
                     <div class="form-group">
                         <label for="username" class="form-label">Username</label>
                         <div class="input-group">
