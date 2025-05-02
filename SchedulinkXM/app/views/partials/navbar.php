@@ -68,13 +68,13 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="exams/list.php">Exams</a>
+                    <a class="nav-link" href="../exams/list.php">Exams</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="lecturers/list.php">Lecturers</a>
+                    <a class="nav-link" href="../lecturers/list.php">Lecturers</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="halls/list.php">Halls</a>
+                    <a class="nav-link" href="../halls/list.php">Halls</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/reports/allocations">Reports</a>
