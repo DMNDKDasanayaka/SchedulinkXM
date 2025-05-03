@@ -1,94 +1,206 @@
 <?php
-include '../includes/header.php';
-include '../includes/navbar.php';
-include '../includes/db_connect.php';
+// Enable error reporting
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
-// Handle adding new exam
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $subject_code = $_POST['subject_code'];
-    $subject_name = $_POST['subject_name'];
-    $degree = $_POST['degree'];
-    $date = $_POST['date'];
-    $start_time = $_POST['start_time'];
-    $end_time = $_POST['end_time'];
-    $student_count = $_POST['student_count'];
+// Database configuration
+define('DB_HOST', 'localhost');
+define('DB_USER', 'root');       // Default XAMPP username
+define('DB_PASS', '');           // Default XAMPP password (empty)
+define('DB_NAME', 'schedulinkxm'); // Your database name
 
-    $sql = "INSERT INTO exams (subject_code, subject_name, degree, date, start_time, end_time, student_count) 
-            VALUES ('$subject_code', '$subject_name', '$degree', '$date', '$start_time', '$end_time', $student_count)";
+// Establish database connection
+try {
+    $db = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     
-    if (mysqli_query($conn, $sql)) {
-        echo "<div class='alert alert-success'>Exam added successfully!</div>";
-    } else {
-        echo "<div class='alert alert-danger'>Error: " . mysqli_error($conn) . "</div>";
+    if ($db->connect_error) {
+        throw new Exception("Connection failed: " . $db->connect_error);
+    }
+    
+    // Set charset to utf8
+    $db->set_charset("utf8");
+    
+} catch (Exception $e) {
+    die("Database error: " . $e->getMessage());
+}
+
+// Handle form submissions
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    try {
+        if (isset($_POST['add'])) {
+            // Add new examiner
+            $stmt = $db->prepare("INSERT INTO examiners (no, code, title, setter_moderator, first_examiner, second_examiner, degree_programs) VALUES (?, ?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("issssss", $_POST['no'], $_POST['code'], $_POST['title'], $_POST['setter_moderator'], $_POST['first_examiner'], $_POST['second_examiner'], $_POST['degree_programs']);
+            $stmt->execute();
+            $success = "Examiner added successfully!";
+            
+        } elseif (isset($_POST['update'])) {
+            // Update examiner
+            $stmt = $db->prepare("UPDATE examiners SET no=?, code=?, title=?, setter_moderator=?, first_examiner=?, second_examiner=?, degree_programs=? WHERE id=?");
+            $stmt->bind_param("issssssi", $_POST['no'], $_POST['code'], $_POST['title'], $_POST['setter_moderator'], $_POST['first_examiner'], $_POST['second_examiner'], $_POST['degree_programs'], $_POST['id']);
+            $stmt->execute();
+            $success = "Examiner updated successfully!";
+            header("Location: manage_examiners.php"); // Redirect to clear POST data
+            exit();
+        }
+    } catch (Exception $e) {
+        $error = "Error: " . $e->getMessage();
+    }
+} elseif (isset($_GET['delete'])) {
+    try {
+        // Delete examiner
+        $stmt = $db->prepare("DELETE FROM examiners WHERE id=?");
+        $stmt->bind_param("i", $_GET['delete']);
+        $stmt->execute();
+        $success = "Examiner deleted successfully!";
+        header("Location: manage_examiners.php");
+        exit();
+    } catch (Exception $e) {
+        $error = "Error deleting record: " . $e->getMessage();
     }
 }
 
-// Fetch exams
-$sql = "SELECT * FROM exams ORDER BY date";
-$result = mysqli_query($conn, $sql);
+// Fetch data for editing if edit parameter is set
+$editData = null;
+if (isset($_GET['edit'])) {
+    try {
+        $stmt = $db->prepare("SELECT * FROM examiners WHERE id=?");
+        $stmt->bind_param("i", $_GET['edit']);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $editData = $result->fetch_assoc();
+    } catch (Exception $e) {
+        $error = "Error fetching record: " . $e->getMessage();
+    }
+}
+
+// Fetch all examiners
+try {
+    $examiners = $db->query("SELECT * FROM examiners ORDER BY no");
+} catch (Exception $e) {
+    $error = "Error fetching examiners: " . $e->getMessage();
+}
 ?>
 
-<div class="container mt-4">
-    <h1>Manage Exams</h1>
-    <form method="POST" class="mt-4">
-        <div class="mb-3">
-            <label for="subject_code" class="form-label">Subject Code</label>
-            <input type="text" class="form-control" id="subject_code" name="subject_code" required>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Examiners</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        form { margin-bottom: 20px; background: #f9f9f9; padding: 20px; border-radius: 5px; }
+        input, button { padding: 8px; margin: 5px 0; }
+        .form-group { margin-bottom: 10px; }
+        .action-btn { margin-right: 5px; text-decoration: none; padding: 5px 10px; }
+        .success { color: green; background: #e6ffe6; padding: 10px; }
+        .error { color: red; background: #ffebeb; padding: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Manage Examiners</h1>
+    
+    <!-- Display success/error messages -->
+    <?php if (isset($success)): ?>
+        <div class="success"><?= $success ?></div>
+    <?php endif; ?>
+    <?php if (isset($error)): ?>
+        <div class="error"><?= $error ?></div>
+    <?php endif; ?>
+    
+    <!-- Add/Edit Form -->
+    <h2><?= isset($_GET['edit']) ? 'Edit Examiner' : 'Add New Examiner' ?></h2>
+    <form method="POST">
+        <?php if (isset($editData)): ?>
+            <input type="hidden" name="id" value="<?= $editData['id'] ?>">
+        <?php endif; ?>
+        
+        <div class="form-group">
+            <label>No:</label>
+            <input type="number" name="no" value="<?= $editData['no'] ?? '' ?>" required>
         </div>
-        <div class="mb-3">
-            <label for="subject_name" class="form-label">Subject Name</label>
-            <input type="text" class="form-control" id="subject_name" name="subject_name" required>
+        
+        <div class="form-group">
+            <label>Code:</label>
+            <input type="text" name="code" value="<?= $editData['code'] ?? '' ?>" required>
         </div>
-        <div class="mb-3">
-            <label for="degree" class="form-label">Degree</label>
-            <input type="text" class="form-control" id="degree" name="degree" required>
+        
+        <div class="form-group">
+            <label>Title:</label>
+            <input type="text" name="title" value="<?= $editData['title'] ?? '' ?>" required>
         </div>
-        <div class="mb-3">
-            <label for="date" class="form-label">Date</label>
-            <input type="date" class="form-control" id="date" name="date" required>
+        
+        <div class="form-group">
+            <label>Setter/Moderator:</label>
+            <input type="text" name="setter_moderator" value="<?= $editData['setter_moderator'] ?? '' ?>" required>
         </div>
-        <div class="mb-3">
-            <label for="start_time" class="form-label">Start Time</label>
-            <input type="time" class="form-control" id="start_time" name="start_time" required>
+        
+        <div class="form-group">
+            <label>First Examiner:</label>
+            <input type="text" name="first_examiner" value="<?= $editData['first_examiner'] ?? '' ?>" required>
         </div>
-        <div class="mb-3">
-            <label for="end_time" class="form-label">End Time</label>
-            <input type="time" class="form-control" id="end_time" name="end_time" required>
+        
+        <div class="form-group">
+            <label>Second Examiner:</label>
+            <input type="text" name="second_examiner" value="<?= $editData['second_examiner'] ?? '' ?>" required>
         </div>
-        <div class="mb-3">
-            <label for="student_count" class="form-label">Student Count</label>
-            <input type="number" class="form-control" id="student_count" name="student_count" required>
+        
+        <div class="form-group">
+            <label>Degree Programs:</label>
+            <input type="text" name="degree_programs" value="<?= $editData['degree_programs'] ?? '' ?>" required>
         </div>
-        <button type="submit" class="btn btn-primary">Add Exam</button>
+        
+        <button type="submit" name="<?= isset($editData) ? 'update' : 'add' ?>">
+            <?= isset($editData) ? 'Update' : 'Add' ?> Examiner
+        </button>
+        
+        <?php if (isset($editData)): ?>
+            <a href="manage_examiners.php" class="action-btn">Cancel</a>
+        <?php endif; ?>
     </form>
 
-    <h2 class="mt-4">Current Exams</h2>
-    <table class="table mt-3">
-        <thead>
-            <tr>
-                <th>Subject Code</th>
-                <th>Subject Name</th>
-                <th>Degree</th>
-                <th>Date</th>
-                <th>Start Time</th>
-                <th>End Time</th>
-                <th>Student Count</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php while ($row = mysqli_fetch_assoc($result)): ?>
+    <!-- Examiners List -->
+    <h2>Examiners List</h2>
+    <?php if ($examiners && $examiners->num_rows > 0): ?>
+        <table>
+            <thead>
                 <tr>
-                    <td><?= $row['subject_code'] ?></td>
-                    <td><?= $row['subject_name'] ?></td>
-                    <td><?= $row['degree'] ?></td>
-                    <td><?= $row['date'] ?></td>
-                    <td><?= $row['start_time'] ?></td>
-                    <td><?= $row['end_time'] ?></td>
-                    <td><?= $row['student_count'] ?></td>
+                    <th>No</th>
+                    <th>Code</th>
+                    <th>Title</th>
+                    <th>Setter/Moderator</th>
+                    <th>First Examiner</th>
+                    <th>Second Examiner</th>
+                    <th>Degree Programs</th>
+                    <th>Actions</th>
                 </tr>
-            <?php endwhile; ?>
-        </tbody>
-    </table>
-</div>
+            </thead>
+            <tbody>
+                <?php while ($row = $examiners->fetch_assoc()): ?>
+                    <tr>
+                        <td><?= htmlspecialchars($row['no']) ?></td>
+                        <td><?= htmlspecialchars($row['code']) ?></td>
+                        <td><?= htmlspecialchars($row['title']) ?></td>
+                        <td><?= htmlspecialchars($row['setter_moderator']) ?></td>
+                        <td><?= htmlspecialchars($row['first_examiner']) ?></td>
+                        <td><?= htmlspecialchars($row['second_examiner']) ?></td>
+                        <td><?= htmlspecialchars($row['degree_programs']) ?></td>
+                        <td>
+                            <a href="manage_examiners.php?edit=<?= $row['id'] ?>" class="action-btn">Edit</a>
+                            <a href="manage_examiners.php?delete=<?= $row['id'] ?>" class="action-btn" onclick="return confirm('Are you sure you want to delete this examiner?')">Delete</a>
+                        </td>
+                    </tr>
+                <?php endwhile; ?>
+            </tbody>
+        </table>
+    <?php else: ?>
+        <p>No examiners found.</p>
+    <?php endif; ?>
 
-<?php include '../includes/footer.php'; ?>
+    <?php $db->close(); ?>
+</body>
+</html>
