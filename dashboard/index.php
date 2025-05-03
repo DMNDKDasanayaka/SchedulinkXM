@@ -388,12 +388,6 @@ if (!isset($_SESSION['user_id'])) {
                 </a>
             </div>
             <div class="nav-item">
-                <a href="payment_management.php" class="nav-link">
-                    <i class="fas fa-tasks"></i>
-                    <span>Payment Management</span>
-                </a>
-            </div>
-            <div class="nav-item">
                 <a href="reports.php" class="nav-link">
                     <i class="fas fa-chart-bar"></i>
                     <span>Reports</span>
@@ -401,27 +395,215 @@ if (!isset($_SESSION['user_id'])) {
             </div>
         </nav>
     </div>
-</nav>
 
-<div class="container mt-5">
-    <h2 class="mb-4">Dashboard</h2>
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <header class="header">
+            <div>
+                <button class="btn btn-sm btn-outline-secondary d-lg-none" id="sidebarToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <div class="user-menu">
+                <span class="user-name"><?php echo htmlspecialchars($_SESSION['username']); ?></span>
+                <div class="user-avatar">
+                    <?php echo strtoupper(substr($_SESSION['username'], 0, 1)); ?>
+                </div>
+                <a href="../auth/logout.php" class="btn btn-sm btn-outline-danger ms-2">
+                    <i class="fas fa-sign-out-alt"></i>
+                </a>
+            </div>
+        </header>
 
-    <div class="row">
-        <div class="col-md-4 mb-3">
-            <a href="manage_exams.php" class="btn btn-primary w-100">Manage Exams</a>
-        </div>
-        <div class="col-md-4 mb-3">
-            <a href="manage_lecturers.php" class="btn btn-secondary w-100">Manage Lecturers</a>
-        </div>
-        <div class="col-md-4 mb-3">
-            <a href="manage_halls.php" class="btn btn-info w-100">Manage Halls</a>
-        </div>
-        <div class="col-md-4 mb-3">
-            <a href="view_allocations.php" class="btn btn-success w-100">View Allocations</a>
-        </div>
-       
-        <div class="col-md-4 mb-3">
-            <a href="reports.php" class="btn btn-warning w-100">Reports</a>
+        <!-- Dashboard Content -->
+        <div class="dashboard-content">
+            <div class="page-header">
+                <h1 class="page-title">Dashboard Overview</h1>
+                <div class="btn-group">
+                    <button class="btn btn-sm btn-outline-secondary">Today</button>
+                    <button class="btn btn-sm btn-outline-secondary">Week</button>
+                    <button class="btn btn-sm btn-outline-primary">Month</button>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div>
+                            <p class="stat-title">Upcoming Exams</p>
+                            <h3 class="stat-value">24</h3>
+                        </div>
+                        <div class="stat-icon primary">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div>
+                            <p class="stat-title">Active Lecturers</p>
+                            <h3 class="stat-value">18</h3>
+                        </div>
+                        <div class="stat-icon success">
+                            <i class="fas fa-chalkboard-teacher"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div>
+                            <p class="stat-title">Available Halls</p>
+                            <h3 class="stat-value">12</h3>
+                        </div>
+                        <div class="stat-icon warning">
+                            <i class="fas fa-building"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div>
+                            <p class="stat-title">Allocation Rate</p>
+                            <h3 class="stat-value">96%</h3>
+                        </div>
+                        <div class="stat-icon danger">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Cards -->
+            <div class="main-cards">
+                <div class="main-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Quick Actions</h2>
+                    </div>
+                    <ul class="feature-list">
+                        <li class="feature-item">
+                            <div class="feature-icon">
+                                <i class="fas fa-plus"></i>
+                            </div>
+                            <div class="feature-text">
+                                <div class="feature-name">Schedule New Exam</div>
+                                <div class="feature-desc">Create a new examination event</div>
+                            </div>
+                            <button class="btn-feature primary">Add</button>
+                        </li>
+                        <li class="feature-item">
+                            <div class="feature-icon">
+                                <i class="fas fa-user-plus"></i>
+                            </div>
+                            <div class="feature-text">
+                                <div class="feature-name">Add Lecturer</div>
+                                <div class="feature-desc">Register new faculty member</div>
+                            </div>
+                            <button class="btn-feature primary">Add</button>
+                        </li>
+                        <li class="feature-item">
+                            <div class="feature-icon">
+                                <i class="fas fa-print"></i>
+                            </div>
+                            <div class="feature-text">
+                                <div class="feature-name">Generate Report</div>
+                                <div class="feature-desc">Create system status report</div>
+                            </div>
+                            <button class="btn-feature primary">Generate</button>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="main-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Recent Activities</h2>
+                        <a href="#" class="card-action">
+                            View All <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </div>
+                    <ul class="feature-list">
+                        <li class="feature-item">
+                            <div class="feature-icon">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <div class="feature-text">
+                                <div class="feature-name">Exam Scheduled</div>
+                                <div class="feature-desc">Final Exams - Computer Science</div>
+                            </div>
+                            <small class="text-muted">2h ago</small>
+                        </li>
+                        <li class="feature-item">
+                            <div class="feature-icon">
+                                <i class="fas fa-user-edit"></i>
+                            </div>
+                            <div class="feature-text">
+                                <div class="feature-name">Lecturer Updated</div>
+                                <div class="feature-desc">Dr. Smith's profile</div>
+                            </div>
+                            <small class="text-muted">1d ago</small>
+                        </li>
+                        <li class="feature-item">
+                            <div class="feature-icon">
+                                <i class="fas fa-building"></i>
+                            </div>
+                            <div class="feature-text">
+                                <div class="feature-name">Hall Added</div>
+                                <div class="feature-desc">Main Auditorium (Capacity: 300)</div>
+                            </div>
+                            <small class="text-muted">3d ago</small>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="main-card">
+                    <div class="card-header">
+                        <h2 class="card-title">System Features</h2>
+                    </div>
+                    <div class="row row-cols-2 g-3">
+                        <div class="col">
+                            <a href="manage_exams.php" class="card h-100 feature-card">
+                                <div class="card-body text-center">
+                                    <div class="stat-icon primary mb-2">
+                                        <i class="fas fa-calendar-alt"></i>
+                                    </div>
+                                    <h6 class="mb-0">Exams</h6>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col">
+                            <a href="manage_lecturers.php" class="card h-100 feature-card">
+                                <div class="card-body text-center">
+                                    <div class="stat-icon success mb-2">
+                                        <i class="fas fa-chalkboard-teacher"></i>
+                                    </div>
+                                    <h6 class="mb-0">Lecturers</h6>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col">
+                            <a href="manage_halls.php" class="card h-100 feature-card">
+                                <div class="card-body text-center">
+                                    <div class="stat-icon warning mb-2">
+                                        <i class="fas fa-building"></i>
+                                    </div>
+                                    <h6 class="mb-0">Halls</h6>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col">
+                            <a href="reports.php" class="card h-100 feature-card">
+                                <div class="card-body text-center">
+                                    <div class="stat-icon danger mb-2">
+                                        <i class="fas fa-chart-pie"></i>
+                                    </div>
+                                    <h6 class="mb-0">Reports</h6>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
