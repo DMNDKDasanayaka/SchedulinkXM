@@ -299,7 +299,7 @@ if (isset($_POST['report_type'])) {
                 <label for="report_type" class="form-label">Select Report Type</label>
                 <select class="form-select" id="report_type" name="report_type" required>
                     <option value="">-- Select Report Type --</option>
-                    <option value="exam_schedule" <?= isset($_POST['report_type']) && $_POST['report_type'] == 'exam_schedule' ? 'selected' : '' ?>>Exam Schedule</option>
+                    
                     <option value="lecturer_allocation" <?= isset($_POST['report_type']) && $_POST['report_type'] == 'lecturer_allocation' ? 'selected' : '' ?>>Lecturer Allocation</option>
                     <option value="hall_allocation" <?= isset($_POST['report_type']) && $_POST['report_type'] == 'hall_allocation' ? 'selected' : '' ?>>Hall Allocation</option>
                 </select>

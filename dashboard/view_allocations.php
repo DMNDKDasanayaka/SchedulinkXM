@@ -126,64 +126,39 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['generate'])) {
     $db->query("TRUNCATE TABLE allocations");
     $db->query("TRUNCATE TABLE duty_payments");
     
-    // Sample exam schedule data (should be replaced with your actual exam_schedule data)
-    $examSchedule = [
-        [
-            'date' => '2025-02-17',
-            'time' => '2.00 PM - 3.00 PM',
-            'subject' => 'Communication Skills(ESD 311-1)',
-            'degree' => 'ANS',
-            'venue' => 'G1'
-        ],
-        [
-            'date' => '2025-02-17',
-            'time' => '2.00 PM - 3.00 PM',
-            'subject' => 'Communication Skills(ESD 311-1)',
-            'degree' => 'AQT',
-            'venue' => 'G2'
-        ],
-        // Add all other exam slots from your PDF here...
-    ];
+    // Get all exams from the database
+    $exams = $db->query("SELECT * FROM exams ORDER BY date, start_time");
     
-    // If you have data in exam_schedule table, use this instead:
-    // $examSchedule = $db->query("SELECT * FROM exam_schedule ORDER BY date, time");
-    
-    foreach ($examSchedule as $exam) {
+    while ($exam = $exams->fetch_assoc()) {
         // Auto-assign staff with priority to examiners
-        $supervisor = assignStaff($db, $exam['subject'], $exam['degree'], 'supervisor', $exam['date'], $exam['time']);
-        $attendant = assignStaff($db, $exam['subject'], $exam['degree'], 'hall_attendant', $exam['date'], $exam['time']);
+        $supervisor = assignStaff($db, $exam['subject_name'], $exam['degree'], 'supervisor', $exam['date'], $exam['start_time']);
+        $attendant = assignStaff($db, $exam['subject_name'], $exam['degree'], 'hall_attendant', $exam['date'], $exam['start_time']);
         
-        // Get student counts (from your PDF sample data)
-        $studentCounts = [
-            'Communication Skills(ESD 311-1)' => ['ANS' => ['p' => 75, 'r' => 1], 'AQT' => ['p' => 73, 'r' => 1]],
-            'Advanced Postharvest Technology (ESD 361-2)' => ['ANS' => ['p' => 75, 'r' => 1]],
-            // Add all other subjects with their counts...
-        ];
+        // Format time for display
+        $start_time = date("h.i A", strtotime($exam['start_time']));
+        $end_time = date("h.i A", strtotime($exam['end_time']));
+        $time_slot = "$start_time - $end_time";
         
-        $subjectKey = $exam['subject'];
-        $degreeKey = $exam['degree'];
-        $p_count = $studentCounts[$subjectKey][$degreeKey]['p'] ?? rand(40, 120);
-        $r_count = $studentCounts[$subjectKey][$degreeKey]['r'] ?? rand(0, 5);
-        $total = $p_count + $r_count;
+        // Get day of week
+        $day = date('l', strtotime($exam['date']));
         
         // Insert into roster
         $stmt = $db->prepare("INSERT INTO duty_roster 
             (date, day, time, subject, degree, venue, supervisor, hall_attendant, p_count, r_count, total) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         
-        $day = date('l', strtotime($exam['date']));
         $stmt->bind_param("ssssssssiii", 
             $exam['date'],
             $day,
-            $exam['time'],
-            $exam['subject'],
+            $time_slot,
+            $exam['subject_name'],
             $exam['degree'],
-            $exam['venue'],
+            $exam['faculty'], // Using faculty as venue in this example
             $supervisor,
             $attendant,
-            $p_count,
-            $r_count,
-            $total
+            $exam['student_count'],
+            $exam['repeaters'],
+            $exam['student_count'] + $exam['repeaters']
         );
         $stmt->execute();
         $rosterId = $db->insert_id;
@@ -191,8 +166,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['generate'])) {
         // Get lecturer IDs
         $supervisorId = getLecturerId($db, $supervisor);
         $attendantId = getLecturerId($db, $attendant);
-        $examId = getExamId($db, extractSubjectCode($exam['subject']), $exam['date']);
-        $hallId = getHallId($db, $exam['venue']);
+        $examId = $exam['exam_id'];
+        $hallId = getHallId($db, $exam['faculty']); // Using faculty as hall name in this example
         
         // Create allocation record
         if ($supervisorId && $examId && $hallId) {
@@ -232,16 +207,6 @@ function getLecturerId($db, $name) {
     return $result->num_rows > 0 ? $result->fetch_assoc()['lecturer_id'] : null;
 }
 
-// Helper function to get exam ID
-function getExamId($db, $subjectCode, $date) {
-    $stmt = $db->prepare("SELECT exam_id FROM exams WHERE subject_code LIKE ? AND date = ? LIMIT 1");
-    $likeCode = "%$subjectCode%";
-    $stmt->bind_param("ss", $likeCode, $date);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    return $result->num_rows > 0 ? $result->fetch_assoc()['exam_id'] : null;
-}
-
 // Helper function to get hall ID
 function getHallId($db, $venue) {
     $stmt = $db->prepare("SELECT hall_id FROM exam_halls WHERE hall_name = ? LIMIT 1");
@@ -260,6 +225,26 @@ $lecturerList = [];
 while ($lecturer = $lecturers->fetch_assoc()) {
     $lecturerList[$lecturer['name']] = $lecturer;
 }
+
+// Helper function to check if staff is subject expert
+function isSubjectExpert($db, $name, $subjectCode) {
+    $query = "SELECT 1 FROM examiners 
+             WHERE (first_examiner = ? OR second_examiner = ? OR setter_moderator = ?)
+             AND code LIKE ?";
+    $stmt = $db->prepare($query);
+    $likeCode = "%$subjectCode%";
+    $stmt->bind_param("ssss", $name, $name, $name, $likeCode);
+    $stmt->execute();
+    return $stmt->get_result()->num_rows > 0;
+}
+
+// Helper function to check department match
+function isDepartmentMatch($name, $degree, $lecturerList) {
+    if (!isset($lecturerList[$name])) return false;
+    
+    $dept = getDepartmentFromDegree($degree);
+    return $lecturerList[$name]['department'] == $dept;
+}
 ?>
 
 <!DOCTYPE html>
@@ -267,7 +252,7 @@ while ($lecturer = $lecturers->fetch_assoc()) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Duty Roster Allocation</title>
+    <title>Automatic Duty Roster Generator</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
         h1 { color: #2c3e50; text-align: center; margin-bottom: 20px; }
@@ -293,6 +278,8 @@ while ($lecturer = $lecturers->fetch_assoc()) {
         button:hover { background-color: #2980b9; }
         .print-btn { background-color: #2ecc71; }
         .print-btn:hover { background-color: #27ae60; }
+        .generate-btn { background-color: #e67e22; }
+        .generate-btn:hover { background-color: #d35400; }
         .success { 
             color: #155724; 
             background-color: #d4edda; 
@@ -369,11 +356,11 @@ while ($lecturer = $lecturers->fetch_assoc()) {
     </style>
 </head>
 <body>
-    <h1>Duty Roster Allocation</h1>
+    <h1>Automatic Duty Roster Generator</h1>
     
     <div class="controls no-print">
         <form method="POST">
-            <button type="submit" name="generate">Generate New Roster</button>
+            <button type="submit" name="generate" class="generate-btn">Generate New Roster</button>
         </form>
         <button type="button" class="print-btn" onclick="window.print()">Print Roster</button>
     </div>
@@ -471,28 +458,6 @@ while ($lecturer = $lecturers->fetch_assoc()) {
         </tbody>
     </table>
 
-    <?php
-    // Helper function to check if staff is subject expert
-    function isSubjectExpert($db, $name, $subjectCode) {
-        $query = "SELECT 1 FROM examiners 
-                 WHERE (first_examiner = ? OR second_examiner = ? OR setter_moderator = ?)
-                 AND code LIKE ?";
-        $stmt = $db->prepare($query);
-        $likeCode = "%$subjectCode%";
-        $stmt->bind_param("ssss", $name, $name, $name, $likeCode);
-        $stmt->execute();
-        return $stmt->get_result()->num_rows > 0;
-    }
-    
-    // Helper function to check department match
-    function isDepartmentMatch($name, $degree, $lecturerList) {
-        if (!isset($lecturerList[$name])) return false;
-        
-        $dept = getDepartmentFromDegree($degree);
-        return $lecturerList[$name]['department'] == $dept;
-    }
-    
-    $db->close();
-    ?>
+    <?php $db->close(); ?>
 </body>
 </html>
